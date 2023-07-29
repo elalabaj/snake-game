@@ -15,6 +15,7 @@ export class Snake {
     segments: Segment[];
     nextDirections: Direction[] = []
     gameOver = false;
+    score = 0;
 
     constructor(board: Board, x: number, y: number, direction: Direction) {
         this.board = board;
@@ -48,6 +49,7 @@ export class Snake {
             this.segments.push({x: lastSegment.x, y: lastSegment.y});
             this.board.grid[lastSegment.x][lastSegment.y] = Cell.Snake;
             this.board.addRandomApple();
+            this.score++;
         }
 
         for (let i = this.segments.length - 1; i > 0; i--) {

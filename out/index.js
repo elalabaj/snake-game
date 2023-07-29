@@ -2,8 +2,11 @@ import { Board, Cell } from "./board.js";
 import { Snake } from "./snake.js";
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
+const scoreLabel = document.getElementById('score');
+const bestScoreLabel = document.getElementById('best-score');
 canvas.width = 800;
 canvas.height = 800;
+context.font = '40px Times New Roman';
 const cols = 16;
 const rows = 16;
 const colWidth = canvas.width / cols;
@@ -11,27 +14,43 @@ const rowHeight = canvas.height / rows;
 const margin = 5;
 const snakeColor = 'white';
 const appleColor = 'red';
-const board = new Board(16, 16);
-const snake = new Snake(board, 0, 0, 'E');
+let board = new Board(16, 16);
+let snake = new Snake(board, 0, 0, 'E');
 board.addRandomApple();
 let time = 0;
 let moveInterval = 150;
 let lastTimestamp = 0;
+start();
+function start() {
+    board = new Board(16, 16);
+    snake = new Snake(board, 0, 0, 'E');
+    board.addRandomApple();
+    time = 0;
+    moveInterval = 150;
+    lastTimestamp = 0;
+    requestAnimationFrame(animate);
+}
 function animate(timestamp) {
     context.clearRect(0, 0, canvas.width, canvas.height);
     let deltaTime = timestamp - lastTimestamp;
     lastTimestamp = timestamp;
     time += deltaTime;
     if (time >= moveInterval) {
-        time -= moveInterval;
+        time = 0;
         snake.update();
     }
     drawApples();
     drawSnake();
+    scoreLabel.innerHTML = snake.score.toString();
     if (!snake.gameOver)
         requestAnimationFrame(animate);
+    else {
+        if (snake.score > parseInt(bestScoreLabel.innerHTML)) {
+            bestScoreLabel.innerHTML = snake.score.toString();
+        }
+        drawGameOver();
+    }
 }
-animate(0);
 window.addEventListener('keydown', e => {
     switch (e.key) {
         case 'ArrowUp':
@@ -46,8 +65,17 @@ window.addEventListener('keydown', e => {
         case 'ArrowRight':
             snake.changeDirection('E');
             break;
+        case ' ':
+            if (snake.gameOver)
+                start();
+            break;
     }
 });
+function drawGameOver() {
+    context.fillStyle = 'red';
+    context.textAlign = 'center';
+    context.fillText('Game Over! Press space to continue.', canvas.width * 0.5, canvas.height * 0.5);
+}
 function drawApples() {
     board.grid.forEach((col, x) => col.forEach((cell, y) => {
         if (cell == Cell.Apple) {
